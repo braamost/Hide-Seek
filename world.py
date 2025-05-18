@@ -40,6 +40,10 @@ class BaseWorld:
     def generate_payoff_matrix(self):
         """Generate the game payoff matrix from the hider's perspective."""
         raise NotImplementedError("Subclasses must implement this method")
+    
+    def get_payoff_matrix(self):
+        """Get the payoff matrix."""
+        raise NotImplementedError("Subclasses must implement this method")
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
@@ -53,6 +57,10 @@ class BaseWorld:
         Returns:
             float: Adjusted score based on proximity
         """
+        raise NotImplementedError("Subclasses must implement this method")
+    
+    def reset(self):
+        """Reset the world to its initial state."""
         raise NotImplementedError("Subclasses must implement this method")
 
 class World1D(BaseWorld):
@@ -113,12 +121,25 @@ class World1D(BaseWorld):
         """
         for i in range(self.size):
             for j in range(self.size):
+                score = 1
                 if (i == j and self.human_choice == PlayerType.HIDER) or (i != j and self.human_choice == PlayerType.SEEKER):
-                    self.payoff_matrix[i][j] *= -1
+                    score *= -1
                 if i != j and self.places[i] == PlaceType.EASY:
-                    self.payoff_matrix[i][j] *= 2
+                    score *= 2
                 if i == j and self.places[i] == PlaceType.HARD:
-                    self.payoff_matrix[i][j] *= 3
+                    score *= 3
+
+                self.payoff_matrix[i][j] = score
+
+
+    def get_payoff_matrix(self):
+        """
+        Get the payoff matrix.
+        
+        Returns:
+            np.ndarray: The payoff matrix
+        """
+        return self.payoff_matrix
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
@@ -138,6 +159,11 @@ class World1D(BaseWorld):
         elif diff == 2:
             return base_score * 0.75
         return base_score
+    
+    def reset(self):
+        """Reset the world to its initial state."""
+        self.places = [random.choice(list(PlaceType)) for _ in range(self.size)]
+        self.generate_payoff_matrix()
 
 class World2D(BaseWorld):
     """Represents the game world in a 2-dimensional grid of places."""
@@ -225,6 +251,15 @@ class World2D(BaseWorld):
                     score *= 3
                 self.payoff_matrix[i][j] = score
 
+    def get_payoff_matrix(self):
+        """
+        Get the payoff matrix.
+        
+        Returns:
+            np.ndarray: The payoff matrix
+        """
+        return self.payoff_matrix
+
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
         Apply proximity score adjustment (Bonus feature).
@@ -245,6 +280,11 @@ class World2D(BaseWorld):
         elif diff == 2:
             return base_score * 0.75
         return base_score
+    
+    def reset(self):
+        """Reset the world to its initial state."""
+        self.places = [[random.choice(list(PlaceType)) for _ in range(self.cols)] for _ in range(self.rows)]
+        self.generate_payoff_matrix()
     
 
 # if __name__ == "__main__":

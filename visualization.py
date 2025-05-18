@@ -202,9 +202,7 @@ class GameVisualization:
             return
         
         # Generate payoff matrix
-        payoff_matrix = self.world.generate_payoff_matrix()
-        # Convert to numpy array for consistent handling
-        payoff_matrix = np.array(payoff_matrix)
+        payoff_matrix = self.world.get_payoff_matrix()
         
         # Clear the table
         self.payoff_table.clear()

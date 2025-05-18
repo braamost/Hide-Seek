@@ -29,17 +29,11 @@ class Simulation:
         self.seeker = ComputerPlayer(PlayerType.SEEKER)
         
         # Set strategies for both players
-        payoff_matrix = self.world.generate_payoff_matrix()
-        # Convert to numpy array
-        payoff_matrix_np = np.array(payoff_matrix)
-        
-        # Important: For zero-sum games, the seeker's payoff matrix is the negative transpose
-        # of the hider's payoff matrix
-        seeker_payoff_matrix = -payoff_matrix_np.T
+        payoff_matrix = self.world.get_payoff_matrix()
         
         # Solve for optimal strategies
-        hider_strategy = self.lp_solver.solve_game(payoff_matrix_np, PlayerType.HIDER)
-        seeker_strategy = self.lp_solver.solve_game(seeker_payoff_matrix, PlayerType.SEEKER)
+        hider_strategy = self.lp_solver.solve_game(payoff_matrix, PlayerType.HIDER)
+        seeker_strategy = self.lp_solver.solve_game(payoff_matrix, PlayerType.SEEKER)
         
         # Debug print
         print("Debug - Strategies:")

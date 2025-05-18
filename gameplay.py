@@ -35,16 +35,14 @@ class GamePlay:
         # Reset selection tracking
         if hasattr(self, 'selected_position'):
             self.selected_position = None
-        
+
+        payoff_matrix_np = np.array(self.world.get_payoff_matrix())
+
         # Initialize players
         if player_type == PlayerType.HIDER:
             self.human_player = HumanPlayer(PlayerType.HIDER)
             self.computer_player = ComputerPlayer(PlayerType.SEEKER)
-            
-            # Set computer strategy
-            payoff_matrix = self.world.generate_payoff_matrix()
-            # Convert to numpy array if it's not already
-            payoff_matrix_np = np.array(payoff_matrix)
+
             strategy = self.lp_solver.solve_game(payoff_matrix_np, PlayerType.SEEKER)
             self.computer_player.set_strategy(strategy)
             
@@ -54,10 +52,7 @@ class GamePlay:
             self.human_player = HumanPlayer(PlayerType.SEEKER)
             self.computer_player = ComputerPlayer(PlayerType.HIDER)
             
-            # Set computer strategy
-            payoff_matrix = self.world.generate_payoff_matrix()
-            # Convert to numpy array if it's not already
-            payoff_matrix_np = np.array(payoff_matrix)
+
             strategy = self.lp_solver.solve_game(payoff_matrix_np, PlayerType.HIDER)
             self.computer_player.set_strategy(strategy)
             
@@ -192,10 +187,9 @@ class GamePlay:
             self.computer_player = ComputerPlayer(PlayerType.HIDER)
             
         # Set computer strategy
-        payoff_matrix = self.world.generate_payoff_matrix()
-        # Convert to numpy array
-        payoff_matrix_np = np.array(payoff_matrix)
-        strategy = self.lp_solver.solve_game(payoff_matrix_np, self.computer_player.type)
+        payoff_matrix = self.world.get_payoff_matrix()
+
+        strategy = self.lp_solver.solve_game(payoff_matrix, self.computer_player.type)
         self.computer_player.set_strategy(strategy)
         
         # Reset game logic
