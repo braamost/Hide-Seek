@@ -6,6 +6,7 @@ both human and computer players.
 """
 
 import random
+import numpy as np
 from enum import Enum
 
 class PlayerType(Enum):
@@ -103,8 +104,14 @@ class ComputerPlayer(Player):
             world (World): The game world
             
         Returns:
-            int: The position chosen by the computer
+            int or tuple: The position chosen by the computer
         """
-        # TODO: Implement move selection based on strategy probabilities
-        # Choose a position randomly based on the probability distribution
-        pass
+        if not self.strategy_probabilities or len(self.strategy_probabilities) != world.size:
+            raise ValueError("Strategy probabilities not set or do not match world size")
+        else:
+            idx = np.random.choice(world.size, p=self.strategy_probabilities)
+        # For 2D world, convert index to (row, col)
+        if hasattr(world, 'index_to_pos'):
+            return world.index_to_pos(idx)
+        else:
+            return idx
