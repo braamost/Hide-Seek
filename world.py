@@ -108,8 +108,6 @@ class World1D(BaseWorld):
         if hider_pos < 0 or seeker_pos < 0 or hider_pos >= self.size or seeker_pos >= self.size:
             raise ValueError("Position out of bounds")
         score = self.payoff_matrix[hider_pos][seeker_pos]
-        if self.use_proximity:
-            score = self.apply_proximity_score(score, hider_pos, seeker_pos)
         return score
 
     def generate_payoff_matrix(self):
@@ -128,6 +126,8 @@ class World1D(BaseWorld):
                     score *= 2
                 if i == j and self.places[i] == PlaceType.HARD:
                     score *= 3
+                if self.use_proximity:
+                    score = self.apply_proximity_score(score, i, j)
 
                 self.payoff_matrix[i][j] = score
 
@@ -227,9 +227,6 @@ class World2D(BaseWorld):
         
 
         score = self.payoff_matrix[hider_index][seeker_index]
-
-        if self.use_proximity:
-            score = self.apply_proximity_score(score, hider_pos, seeker_pos)
         return score
 
     def generate_payoff_matrix(self):
@@ -249,6 +246,8 @@ class World2D(BaseWorld):
                     score *= 2
                 if i == j and self.places[h_row][h_col] == PlaceType.HARD:
                     score *= 3
+                if self.use_proximity:
+                    score = self.apply_proximity_score(score, i, j)
                 self.payoff_matrix[i][j] = score
 
     def get_payoff_matrix(self):
@@ -260,20 +259,25 @@ class World2D(BaseWorld):
         """
         return self.payoff_matrix
 
-    def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
+    def apply_proximity_score(self, base_score, row, col):
         """
         Apply proximity score adjustment (Bonus feature).
         
         Args:
             base_score (float): Original score
-            hider_pos (tuple): Hider's (row, col) position
-            seeker_pos (tuple): Seeker's (row, col) position
+            row (int): Hider's row in the payoff matrix
+            col (int): seeker's col in the payoff matrix
             
         Returns:
             float: Adjusted score based on proximity
         """
-        h_row, h_col = hider_pos
-        s_row, s_col = seeker_pos
+        h_row, h_col = self.index_to_pos(row)
+        s_row, s_col = self.index_to_pos(col)
+        if h_row < 0 or s_row < 0 or h_row >= self.rows or s_row >= self.rows or \
+           h_col < 0 or s_col < 0 or h_col >= self.cols or s_col >= self.cols:
+            raise ValueError("Position out of bounds")
+        
+        # Calculate Manhattan distance
         diff = abs(h_row - s_row) + abs(h_col - s_col)
         if diff == 1:
             return base_score * 0.5
