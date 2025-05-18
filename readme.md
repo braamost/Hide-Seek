@@ -99,5 +99,5 @@ To implement the project, focus on completing the TODO sections in each file. Th
 Start by implementing the core game mechanics before working on the GUI components.
 
 ## github repo
-
+https://github.com/braamost/Hide-Seek
 
