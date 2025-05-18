@@ -12,7 +12,7 @@ from player import PlayerType
 class LPSolver:
     """Linear programming solver for game theory problems."""
 
-    def solve_game(self, payoff_matrix, player_type, view=PlayerType.HIDER):
+    def solve_game(self, payoff_matrix, player_type):
         """
         Solve the game for optimal mixed strategy.
 
@@ -25,14 +25,10 @@ class LPSolver:
             list: Probability distribution over positions
         """
         matrix = np.array(payoff_matrix)
-        if player_type == PlayerType.HIDER and view == PlayerType.HIDER:
+        if player_type == PlayerType.HIDER:
             return self._solve_hider(matrix)
-        elif player_type == PlayerType.SEEKER and view == PlayerType.SEEKER:
+        elif player_type == PlayerType.SEEKER:
             return self._solve_seeker(matrix)
-        elif player_type == PlayerType.HIDER and view == PlayerType.SEEKER:
-            return self._solve_seeker(matrix.T)
-        elif player_type == PlayerType.SEEKER and view == PlayerType.HIDER:
-            return self._solve_seeker(matrix.T)
         else:
             raise ValueError("Invalid player type or view")
 
@@ -59,8 +55,7 @@ class LPSolver:
         if res.success:
             return res.x[:m]
         else:
-            # fallback: uniform
-            return np.ones(m) / m
+            raise ValueError("Linear programming failed to find a solution")
 
     def _solve_seeker(self, matrix):
         # Minimize v, subject to: sum(q_j) = 1, q_j >= 0, and for all i: sum_j q_j * A[i][j] <= v
@@ -85,5 +80,14 @@ class LPSolver:
         if res.success:
             return res.x[:n]
         else:
-            # fallback: uniform
-            return np.ones(n) / n
+            raise ValueError("Linear programming failed to find a solution")
+        
+
+# if __name__ == "__main__":
+#     # Example usage
+#     lp_solver = LPSolver()
+#     payoff_matrix = [[3, -1, -3], [-2, 4, -1], [-5, -6, 2]]
+#     hider_strategy = lp_solver.solve_game(payoff_matrix, PlayerType.HIDER)
+#     seeker_strategy = lp_solver.solve_game(payoff_matrix, PlayerType.SEEKER)
+#     print("Hider Strategy:", hider_strategy)
+#     print("Seeker Strategy:", seeker_strategy)
