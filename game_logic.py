@@ -41,18 +41,25 @@ class GameLogic:
         
         # Update player scores
         found = (hider_pos == seeker_pos)
-        if found:
-            # Seeker found the hider
-            self.seeker.add_win()
-            # Score is negative from hider's perspective
-            self.seeker.add_score(-score)  # Convert to seeker's perspective
+
+        if self.world.human_choice == PlayerType.HIDER:
+            # Score is from hider's perspective 
+            if found:
+                self.seeker.add_win()
+                self.seeker.add_score(-score)
+            else:
+                self.hider.add_win()
+                self.hider.add_score(score)
         else:
-            # Hider successfully hid
-            self.hider.add_win()
-            self.hider.add_score(score)
-        
+            # Score is from seeker's perspective 
+            if found:
+                self.seeker.add_win()
+                self.seeker.add_score(score)
+            else:
+                self.hider.add_win()
+                self.hider.add_score(-score)
+
         self.round_number += 1
-        
         return hider_pos, seeker_pos, score, found
     
     def reset_game(self):

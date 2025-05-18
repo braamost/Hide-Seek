@@ -64,7 +64,7 @@ class HumanPlayer(Player):
         """Initialize a human player."""
         super().__init__(player_type)
     
-    def make_move(self, world):
+    def make_move(self, world, choice):
         """
         Make a move in the game based on user input.
         
@@ -74,10 +74,9 @@ class HumanPlayer(Player):
         Returns:
             int: The position chosen by the player
         """
-        # NOTE: This will be implemented in the UI
         # The UI will handle getting the player's input
-        # This method will be called by the UI
-        pass
+
+        return choice
 
 class ComputerPlayer(Player):
     """Computer player using optimal strategy based on linear programming."""
@@ -109,23 +108,3 @@ class ComputerPlayer(Player):
         # TODO: Implement move selection based on strategy probabilities
         # Choose a position randomly based on the probability distribution
         pass
-
-class RandomPlayer(Player):
-    """Random player for simulation mode."""
-    
-    def __init__(self, player_type):
-        """Initialize a random player."""
-        super().__init__(player_type)
-    
-    def make_move(self, world):
-        """
-        Make a random move.
-        
-        Args:
-            world (World): The game world
-            
-        Returns:
-            int: Random position
-        """
-        # TODO: Implement random move selection
-        return random.randint(0, world.size - 1)
