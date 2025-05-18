@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont, QColor
 
 from player import PlayerType, HumanPlayer, ComputerPlayer
-from world import World, PlaceType
+from world import World1D, World2D, PlaceType, BaseWorld
 from game_logic import GameLogic
 from lp_solver import LPSolver
 from simulation import Simulation
@@ -214,7 +214,7 @@ class GameUI(QMainWindow):
         player_type = PlayerType(self.player_type_group.checkedId())
         
         # Initialize world
-        self.world = World(world_size)
+        self.world = World1D(world_size)
         
         # Initialize LP solver
         self.lp_solver = LPSolver()

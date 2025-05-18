@@ -5,8 +5,8 @@ This module handles the simulation mode where the computer plays
 against a random player for multiple rounds.
 """
 
-from player import RandomPlayer, ComputerPlayer, PlayerType
-from world import World
+from player import ComputerPlayer, PlayerType
+from world import World1D, World2D, BaseWorld
 from game_logic import GameLogic
 from lp_solver import LPSolver
 
@@ -21,16 +21,14 @@ class Simulation:
             world_size (int): Size of the game world
             computer_player_type (PlayerType): Type of the computer player (HIDER/SEEKER)
         """
-        self.world = World(world_size)
+        self.world = World1D(world_size)
         self.lp_solver = LPSolver()
         
         # Create players
         if computer_player_type == PlayerType.HIDER:
             self.computer = ComputerPlayer(PlayerType.HIDER)
-            self.random = RandomPlayer(PlayerType.SEEKER)
         else:
             self.computer = ComputerPlayer(PlayerType.SEEKER)
-            self.random = RandomPlayer(PlayerType.HIDER)
         
         # Set computer strategy
         payoff_matrix = self.world.generate_payoff_matrix()
