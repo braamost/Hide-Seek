@@ -8,22 +8,14 @@ score calculation, and game state management.
 from player import PlayerType
 
 class GameLogic:
-    """Handles the core game mechanics and rules."""
-    
     def __init__(self, world, hider, seeker):
-        """
-        Initialize the game logic.
-        
-        Args:
-            world (World): The game world
-            hider (Player): The hiding player
-            seeker (Player): The seeking player
-        """
         self.world = world
         self.hider = hider
         self.seeker = seeker
         self.round_number = 0
         self.game_over = False
+        self.hider_position = None
+        self.seeker_position = None
     
     def play_round(self):
         """
@@ -35,6 +27,10 @@ class GameLogic:
         # Get moves from both players
         hider_pos = self.hider.make_move(self.world)
         seeker_pos = self.seeker.make_move(self.world)
+        
+        # Store current positions
+        self.hider_position = hider_pos
+        self.seeker_position = seeker_pos
         
         # Calculate score
         score = self.world.get_score(hider_pos, seeker_pos)
@@ -68,6 +64,8 @@ class GameLogic:
         self.game_over = False
         self.hider.reset_stats()
         self.seeker.reset_stats()
+        self.hider_position = None
+        self.seeker_position = None
     
     def get_player_stats(self):
         """
@@ -83,3 +81,9 @@ class GameLogic:
             'hider_wins': self.hider.wins,
             'seeker_wins': self.seeker.wins
         }
+
+    def get_hider_position(self):
+        return self.hider_position
+    
+    def get_seeker_position(self):
+        return self.seeker_position

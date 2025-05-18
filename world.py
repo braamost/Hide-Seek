@@ -6,6 +6,7 @@ including place types and scoring.
 """
 
 import random
+import numpy as np
 from enum import Enum
 from player import PlayerType
 
@@ -68,7 +69,7 @@ class World1D(BaseWorld):
         super().__init__(human_choice, use_proximity)
         self.size = size
         self.places = [random.choice(list(PlaceType)) for _ in range(size)]
-        self.payoff_matrix = [[1] * size for _ in range(size)]
+        self.payoff_matrix = np.ones((size, size))
         self.generate_payoff_matrix()
 
     def get_place_type(self, position):
@@ -120,6 +121,7 @@ class World1D(BaseWorld):
         for i in range(self.size):
             for j in range(self.size):
                 self.payoff_matrix[i][j] = self.get_score(i, j)
+        return self.payoff_matrix
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
@@ -129,7 +131,6 @@ class World1D(BaseWorld):
             base_score (float): Original score
             hider_pos (int): Hider's position
             seeker_pos (int): Seeker's position
-            
         Returns:
             float: Adjusted score based on proximity
         """
@@ -157,7 +158,7 @@ class World2D(BaseWorld):
         self.cols = cols
         self.size = rows * cols
         self.places = [[random.choice(list(PlaceType)) for _ in range(cols)] for _ in range(rows)]
-        self.payoff_matrix = [[1] * self.size for _ in range(self.size)]
+        self.payoff_matrix = np.ones((self.size, self.size))
         self.generate_payoff_matrix()
 
     def pos_to_index(self, row, col):
@@ -221,6 +222,7 @@ class World2D(BaseWorld):
                 hider_pos = self.index_to_pos(i)
                 seeker_pos = self.index_to_pos(j)
                 self.payoff_matrix[i][j] = self.get_score(hider_pos, seeker_pos)
+        return self.payoff_matrix
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """

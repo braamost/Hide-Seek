@@ -28,7 +28,7 @@ class LPSolver:
         if player_type == PlayerType.HIDER and view == PlayerType.HIDER:
             return self._solve_hider(matrix)
         elif player_type == PlayerType.SEEKER and view == PlayerType.SEEKER:
-            return self._solve_hider(matrix)
+            return self._solve_seeker(matrix)
         elif player_type == PlayerType.HIDER and view == PlayerType.SEEKER:
             return self._solve_seeker(matrix.T)
         elif player_type == PlayerType.SEEKER and view == PlayerType.HIDER:
@@ -39,7 +39,7 @@ class LPSolver:
     def _solve_hider(self, matrix):
         # Maximize v, subject to: sum(p_i) = 1, p_i >= 0, and for all j: sum_i p_i * A[i][j] >= v
         m, n = matrix.shape
-        c = np.zeros(m + 1)
+        c = np.zeros(m + 1) #objective function
         c[-1] = -1  # maximize v <=> minimize -v
 
         # Constraints: sum_i p_i * A[i][j] - v >= 0  for all j
