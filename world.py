@@ -99,16 +99,9 @@ class World1D(BaseWorld):
         """
         if hider_pos < 0 or seeker_pos < 0 or hider_pos >= self.size or seeker_pos >= self.size:
             raise ValueError("Position out of bounds")
-        i, j = hider_pos, seeker_pos
-        score = 1
-        if (i == j and self.human_choice == PlayerType.HIDER) or (i != j and self.human_choice == PlayerType.SEEKER):
-            score *= -1
-        if i != j and self.places[i] == PlaceType.EASY:
-            score *= 2
-        if i == j and self.places[i] == PlaceType.HARD:
-            score *= 3
+        score = self.payoff_matrix[hider_pos][seeker_pos]
         if self.use_proximity:
-            score = self.apply_proximity_score(score, i, j)
+            score = self.apply_proximity_score(score, hider_pos, seeker_pos)
         return score
 
     def generate_payoff_matrix(self):
@@ -120,8 +113,12 @@ class World1D(BaseWorld):
         """
         for i in range(self.size):
             for j in range(self.size):
-                self.payoff_matrix[i][j] = self.get_score(i, j)
-        return self.payoff_matrix
+                if (i == j and self.human_choice == PlayerType.HIDER) or (i != j and self.human_choice == PlayerType.SEEKER):
+                    self.payoff_matrix[i][j] *= -1
+                if i != j and self.places[i] == PlaceType.EASY:
+                    self.payoff_matrix[i][j] *= 2
+                if i == j and self.places[i] == PlaceType.HARD:
+                    self.payoff_matrix[i][j] *= 3
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
@@ -131,6 +128,7 @@ class World1D(BaseWorld):
             base_score (float): Original score
             hider_pos (int): Hider's position
             seeker_pos (int): Seeker's position
+            
         Returns:
             float: Adjusted score based on proximity
         """
@@ -161,8 +159,9 @@ class World2D(BaseWorld):
         self.payoff_matrix = np.ones((self.size, self.size))
         self.generate_payoff_matrix()
 
-    def pos_to_index(self, row, col):
+    def pos_to_index(self, position):
         """Convert 2D position (row, col) to 1D index."""
+        row, col = position
         return row * self.cols + col
 
     def index_to_pos(self, index):
@@ -195,17 +194,14 @@ class World2D(BaseWorld):
         Returns:
             int: the score for the human player if he chooses this position
         """
-        h_row, h_col = hider_pos
-        s_row, s_col = seeker_pos
-        h_index = self.pos_to_index(h_row, h_col)
-        s_index = self.pos_to_index(s_row, s_col)
-        score = 1
-        if (h_index == s_index and self.human_choice == PlayerType.HIDER) or (h_index != s_index and self.human_choice == PlayerType.SEEKER):
-            score *= -1
-        if h_index != s_index and self.places[h_row][h_col] == PlaceType.EASY:
-            score *= 2
-        if h_index == s_index and self.places[h_row][h_col] == PlaceType.HARD:
-            score *= 3
+        hider_index = self.pos_to_index(hider_pos)
+        seeker_index = self.pos_to_index(seeker_pos)
+        if hider_index < 0 or seeker_index < 0 or hider_index >= self.size or seeker_index >= self.size:
+            raise ValueError("Position out of bounds")
+        
+
+        score = self.payoff_matrix[hider_index][seeker_index]
+
         if self.use_proximity:
             score = self.apply_proximity_score(score, hider_pos, seeker_pos)
         return score
@@ -219,10 +215,15 @@ class World2D(BaseWorld):
         """
         for i in range(self.size):
             for j in range(self.size):
-                hider_pos = self.index_to_pos(i)
-                seeker_pos = self.index_to_pos(j)
-                self.payoff_matrix[i][j] = self.get_score(hider_pos, seeker_pos)
-        return self.payoff_matrix
+                h_row, h_col = self.index_to_pos(i)
+                score = 1
+                if (i == j and self.human_choice == PlayerType.HIDER) or (i != j and self.human_choice == PlayerType.SEEKER):
+                    score *= -1
+                if i != j and self.places[h_row][h_col] == PlaceType.EASY:
+                    score *= 2
+                if i == j and self.places[h_row][h_col] == PlaceType.HARD:
+                    score *= 3
+                self.payoff_matrix[i][j] = score
 
     def apply_proximity_score(self, base_score, hider_pos, seeker_pos):
         """
@@ -244,3 +245,19 @@ class World2D(BaseWorld):
         elif diff == 2:
             return base_score * 0.75
         return base_score
+    
+
+# if __name__ == "__main__":
+#     # Example usage
+#     world_1d = World1D(size=4, human_choice=PlayerType.HIDER, use_proximity=True)
+#     print("1D World Payoff Matrix:")
+#     print(world_1d.payoff_matrix)
+#     print("score:", world_1d.get_score(0, 1)) #2
+#     print("score:", world_1d.get_score(1, 0)) #1
+#     print("score:", world_1d.get_score(0, 0)) #-1
+
+#     # world_2d = World2D(rows=2, cols=2, human_choice=PlayerType.SEEKER, use_proximity=True)
+#     # print("2D World Payoff Matrix:")
+#     # print(world_2d.payoff_matrix)
+#     # print("score:", world_2d.get_score((0, 0), (1, 1))) #2
+#     # print("score:", world_2d.get_score((0, 1), (1, 0))) #1
