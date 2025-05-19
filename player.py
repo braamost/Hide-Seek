@@ -18,6 +18,8 @@ class Player:
         self.type = player_type
         self.score = 0
         self.wins = 0
+        self.strategy_probabilities = []
+        self.strategy_probabilities_copy = []
     
     def make_move(self, world):
         raise NotImplementedError("Subclasses must implement make_move()")
@@ -53,7 +55,12 @@ class ComputerPlayer(Player):
         self.strategy_probabilities = []
     
     def set_strategy(self, probabilities):
-        self.strategy_probabilities = probabilities
+        #make the array integers by multiplying by 10
+        probabilities=10*probabilities
+        #turn it to integers by rounding
+        self.strategy_probabilities = [round(x) for x in probabilities]
+        self.strategy_probabilities_copy = self.strategy_probabilities.copy()
+
     
     def make_move(self, world):
         if (isinstance(self.strategy_probabilities, list) and not self.strategy_probabilities) or \
@@ -61,12 +68,21 @@ class ComputerPlayer(Player):
            len(self.strategy_probabilities) != world.size:
             raise ValueError("Strategy probabilities not set or do not match world size")
         else:
-            idx = np.random.choice(world.size, p=self.strategy_probabilities)
+            idx = self.choose_from_distribution()
         # For 2D world, convert index to (row, col)
         if hasattr(world, 'index_to_pos'):
             return world.index_to_pos(idx)
         else:
             return idx
+    def choose_from_distribution(self):
+        if all(x == 0 for x in self.strategy_probabilities_copy):
+           self.strategy_probabilities_copy = self.strategy_probabilities.copy()
+        idx = random.randint(0, len(self.strategy_probabilities_copy)-1)
+        while(self.strategy_probabilities_copy[idx] == 0):
+            idx = random.randint(0, len(self.strategy_probabilities_copy)-1)
+        self.strategy_probabilities_copy[idx] -= 1   
+        return idx
+        
 
 class RandomPlayer(Player):
     def __init__(self, player_type):

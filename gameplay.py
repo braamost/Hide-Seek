@@ -5,7 +5,7 @@ This module contains gameplay-related methods for the Hide & Seek game UI.
 """
 
 from PyQt5.QtWidgets import QMessageBox, QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 
 from player import PlayerType, HumanPlayer, ComputerPlayer
 from world import World1D, World2D
@@ -221,18 +221,43 @@ class GamePlay:
         world_size = self.world_size_spin.value()
         player_type = PlayerType(self.player_type_group.checkedId())
         
-        # Create appropriate world
-        if world_dimension == 1:
-            world = World1D(world_size, human_choice=player_type, use_proximity=True)
-        else:  # 2D world
-            world = World2D(world_size, world_size, human_choice=player_type, use_proximity=True)
+        # Clear the world grid and reset visualization
+        self.reset_all_buttons_to_base_style()
+        
+        # Clear probability visualization
+        for i in reversed(range(self.probability_grid.count())):
+            item = self.probability_grid.itemAt(i)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        # Reset stats display
+        self.human_score_label.setText("Score: 0")
+        self.human_wins_label.setText("Wins: 0")
+        self.computer_score_label.setText("Score: 0")
+        self.computer_wins_label.setText("Wins: 0")
+        self.round_label.setText("Round: 0")
+        self.result_label.setText("Result: -")
+        
+        # # Create appropriate world
+        # if world_dimension == 1:
+        #     world = World1D(world_size, human_choice=player_type, use_proximity=True)
+        # else:  # 2D world
+        #     world = World2D(world_size, world_size, human_choice=player_type, use_proximity=True)
             
         # Create the simulation
-        self.simulation = Simulation(world)
+        self.simulation = Simulation(self.world)
         self.simulation_active = True
         
+        # Reset game_logic to ensure no positions are displayed
+        if hasattr(self, 'game_logic'):
+            self.game_logic = None
+            
+        # Reset selected position
+        if hasattr(self, 'selected_position'):
+            self.selected_position = None
+            
         # Update UI - we'll use the existing game world to visualize
-        self.world = world
+
         self.prepare_simulation_ui()
         
         # Make sure the payoff matrix is displayed
@@ -248,6 +273,9 @@ class GamePlay:
         
         # Show status message
         self.show_status_message("Step-by-step simulation started.\nClick 'Next Round' to proceed with each round.\nCheck the Strategy Visualization tab to see both players' strategies.")
+        
+        # Update probability visualization after a short delay to ensure UI is cleared
+        QTimer.singleShot(100, self.update_simulation_probability_visualization)
     
     def prepare_simulation_ui(self):
         """Prepare the UI for simulation mode."""
@@ -277,10 +305,7 @@ class GamePlay:
         self.computer_wins_label.setText("Seeker Wins: 0")
         self.round_label.setText("Round: 0")
         self.result_label.setText("Simulation Started")
-        
-        # Update probability visualization for both players
-        self.update_simulation_probability_visualization()
-
+    
     def play_simulation_round(self):
         """Play one round of the simulation."""
         if not hasattr(self, 'simulation') or not self.simulation_active:
@@ -353,6 +378,23 @@ class GamePlay:
         self.reset_btn.setText("Reset Game")
         self.reset_btn.clicked.disconnect()
         self.reset_btn.clicked.connect(self.reset_game)
+        
+        # Clear the world grid and reset visualization
+        self.reset_all_buttons_to_base_style()
+        
+        # Clear probability visualization
+        for i in reversed(range(self.probability_grid.count())):
+            item = self.probability_grid.itemAt(i)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        # Reset stats display
+        self.human_score_label.setText("Score: 0")
+        self.human_wins_label.setText("Wins: 0")
+        self.computer_score_label.setText("Score: 0")
+        self.computer_wins_label.setText("Wins: 0")
+        self.round_label.setText("Round: 0")
+        self.result_label.setText("Result: -")
         
         # Show final results
         msg = "Simulation Results:\n\n"
