@@ -78,6 +78,9 @@ class GamePlay:
         """Handle a button click on the grid."""
         if not self.game_logic:
             return
+            
+        # Reset all buttons to their base style first
+        self.reset_all_buttons_to_base_style()
         
         # Set the human player's move
         self.human_player.set_move(position)
@@ -106,11 +109,15 @@ class GamePlay:
         
         # Human player's move was already set by button click
         
-        # Get computer's move based on strategy
-        computer_move = self.computer_player.make_move(self.world)
-        
-        # Execute round
+        # Execute round (game_logic.play_round will get the computer's move internally)
         result = self.game_logic.play_round()
+        hider_pos, seeker_pos, score, found = result
+        
+        # Determine which position is the computer's move
+        if self.human_player.type == PlayerType.HIDER:
+            computer_move = seeker_pos
+        else:
+            computer_move = hider_pos
         
         # Update UI with the result
         self.update_game_ui(result, self.human_player.move, computer_move)

@@ -88,11 +88,7 @@ class Simulation:
             tuple: (hider_pos, seeker_pos, payoff, found, stats)
             where stats is a dictionary with current statistics
         """
-        # Get moves from both players
-        hider_pos = self.hider.make_move(self.world)
-        seeker_pos = self.seeker.make_move(self.world)
-        
-        # Calculate score and update game state
+        # Get moves from both players and calculate the result in one step
         hider_pos, seeker_pos, payoff, found = self.game_logic.play_round()
         
         if found:

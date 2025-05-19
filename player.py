@@ -81,6 +81,7 @@ class ComputerPlayer(Player):
         while(self.strategy_probabilities_copy[idx] == 0):
             idx = random.randint(0, len(self.strategy_probabilities_copy)-1)
         self.strategy_probabilities_copy[idx] -= 1   
+        print("strategy_probabilities_copy",self.strategy_probabilities_copy)
         return idx
         
 
