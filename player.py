@@ -8,7 +8,7 @@ both human and computer players.
 import random
 import numpy as np
 from enum import Enum
-
+import random as rd
 class PlayerType(Enum):
     HIDER = 1
     SEEKER = 2
@@ -53,14 +53,17 @@ class ComputerPlayer(Player):
         """Initialize a computer player."""
         super().__init__(player_type)
         self.strategy_probabilities = []
-    
+        self.counter = 0
+        self.strategist = []
+        self.options = []
     def set_strategy(self, probabilities):
-        #make the array integers by multiplying by 10
-        probabilities=10*probabilities
-        #turn it to integers by rounding
-        self.strategy_probabilities = [round(x) for x in probabilities]
-        self.strategy_probabilities_copy = self.strategy_probabilities.copy()
 
+        self.strategy_probabilities = probabilities
+ 
+        self.options = []
+        for i in range(len(self.strategy_probabilities)):
+            self.options.append(i)
+        self.strategist=rd.choices(self.options,self.strategy_probabilities,k=10)
     
     def make_move(self, world):
         if (isinstance(self.strategy_probabilities, list) and not self.strategy_probabilities) or \
@@ -68,21 +71,17 @@ class ComputerPlayer(Player):
            len(self.strategy_probabilities) != world.size:
             raise ValueError("Strategy probabilities not set or do not match world size")
         else:
-            idx = self.choose_from_distribution()
+            idx = self.strategist[self.counter]
+            self.counter += 1
+            if self.counter == 10:
+                self.strategist=rd.choices(self.options,self.strategy_probabilities,k=10)
+                self.counter = 0
         # For 2D world, convert index to (row, col)
         if hasattr(world, 'index_to_pos'):
             return world.index_to_pos(idx)
         else:
             return idx
-    def choose_from_distribution(self):
-        if all(x == 0 for x in self.strategy_probabilities_copy):
-           self.strategy_probabilities_copy = self.strategy_probabilities.copy()
-        idx = random.randint(0, len(self.strategy_probabilities_copy)-1)
-        while(self.strategy_probabilities_copy[idx] == 0):
-            idx = random.randint(0, len(self.strategy_probabilities_copy)-1)
-        self.strategy_probabilities_copy[idx] -= 1   
-        print("strategy_probabilities_copy",self.strategy_probabilities_copy)
-        return idx
+   
         
 
 class RandomPlayer(Player):
