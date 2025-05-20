@@ -478,6 +478,29 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
             # 2D world - display as a grid
             grid_row = 4  # Start after the legend
             
+            # Create better legends similar to simulation mode
+            place_legend_widget = QWidget()
+            place_legend_layout = QHBoxLayout(place_legend_widget)
+            place_legend_layout.setContentsMargins(0, 5, 0, 10)
+            
+            place_legend_label = QLabel("Place Types:")
+            place_legend_label.setStyleSheet("font-weight: bold;")
+            place_legend_layout.addWidget(place_legend_label)
+            
+            easy_legend = QLabel("■ Easy (best for hider)")
+            easy_legend.setStyleSheet("color: #4CAF50; font-weight: bold;")
+            neutral_legend = QLabel("■ Neutral")
+            neutral_legend.setStyleSheet("color: #FFC107; font-weight: bold;")
+            hard_legend = QLabel("■ Hard (best for seeker)")
+            hard_legend.setStyleSheet("color: #F44336; font-weight: bold;")
+            
+            place_legend_layout.addWidget(easy_legend)
+            place_legend_layout.addWidget(neutral_legend)
+            place_legend_layout.addWidget(hard_legend)
+            place_legend_layout.addStretch(1)
+            
+            self.probability_grid.addWidget(place_legend_widget, 3, 0, 1, self.world.cols + 2)
+            
             # Add column headers
             for c in range(self.world.cols):
                 col_label = QLabel(f"Col {c}")
@@ -495,9 +518,9 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                 self.probability_grid.addWidget(row_label, grid_row + r + 1, 0)
                 
                 for c in range(self.world.cols):
-                    # Create colored box
-                    color_box = QLabel()
-                    color_box.setFixedSize(60, 60)
+                    # Create better container for probability info
+                    cell_container = QLabel()
+                    cell_container.setFixedSize(80, 80)
                     
                     # Calculate color intensity
                     prob = probabilities[index]
@@ -507,21 +530,32 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                     place_type = self.world.get_place_type((r, c))
                     if place_type == PlaceType.EASY:
                         border_color = "#4CAF50"  # Green
+                        place_icon = "E"  # Easy
                     elif place_type == PlaceType.NEUTRAL:
                         border_color = "#FFC107"  # Yellow
+                        place_icon = "N"  # Neutral
                     else:  # HARD
                         border_color = "#F44336"  # Red
+                        place_icon = "H"  # Hard
+                    
+                    # Use darker text for light backgrounds and light text for dark backgrounds
+                    text_color = "white" if intensity > 0.3 else "#121212"
                     
                     # Set background color with intensity and border indicating place type
-                    color_box.setStyleSheet(f"background-color: rgba(33, 150, 243, {intensity}); border: 2px solid {border_color}; border-radius: 4px;")
-                    
-                    # Create probability label
-                    prob_label = QLabel(f"{prob:.4f}")
-                    prob_label.setAlignment(Qt.AlignCenter)
+                    cell_container.setText(f"<div align='center'><b>{prob:.4f}</b><br>{place_icon}</div>")
+                    cell_container.setAlignment(Qt.AlignCenter)
+                    cell_container.setStyleSheet(f"""
+                        background-color: rgba(33, 150, 243, {intensity});
+                        border: 3px solid {border_color};
+                        border-radius: 8px;
+                        color: {text_color};
+                        font-weight: bold;
+                        font-size: 16px;
+                        padding: 4px;
+                    """)
                     
                     # Add to grid
-                    self.probability_grid.addWidget(color_box, grid_row + r + 1, c + 1)
-                    self.probability_grid.addWidget(prob_label, grid_row + r + 1 + self.world.rows, c + 1)
+                    self.probability_grid.addWidget(cell_container, grid_row + r + 1, c + 1)
                     
                     index += 1
         
@@ -630,6 +664,7 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                 QTabWidget::pane {
                     border: 1px solid #1e88e5;
                     border-radius: 5px;
+                    padding: 10px;
                 }
                 QTabBar::tab {
                     background-color: #263238;
@@ -640,6 +675,7 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                     border-top-right-radius: 4px;
                     padding: 8px 16px;
                     margin-right: 2px;
+                    font-weight: bold;
                 }
                 QTabBar::tab:selected {
                     background-color: #1e88e5;
@@ -651,7 +687,128 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
             seeker_tab = QWidget()
             
             hider_layout = QGridLayout(hider_tab)
+            hider_layout.setSpacing(8)
             seeker_layout = QGridLayout(seeker_tab)
+            seeker_layout.setSpacing(8)
+            
+            # Create legend for place types and probability
+            legend_widget = QWidget()
+            legend_layout = QVBoxLayout(legend_widget)
+            legend_layout.setContentsMargins(0, 5, 0, 10)
+            
+            # Place type legend
+            place_type_widget = QWidget()
+            place_type_layout = QHBoxLayout(place_type_widget)
+            place_type_layout.setContentsMargins(0, 0, 0, 0)
+            
+            place_legend_label = QLabel("Place Types:")
+            place_legend_label.setStyleSheet("font-weight: bold;")
+            place_type_layout.addWidget(place_legend_label)
+            
+            easy_legend = QLabel("■ Easy (best for hider)")
+            easy_legend.setStyleSheet("color: #4CAF50; font-weight: bold;")
+            neutral_legend = QLabel("■ Neutral")
+            neutral_legend.setStyleSheet("color: #FFC107; font-weight: bold;")
+            hard_legend = QLabel("■ Hard (best for seeker)")
+            hard_legend.setStyleSheet("color: #F44336; font-weight: bold;")
+            
+            place_type_layout.addWidget(easy_legend)
+            place_type_layout.addWidget(neutral_legend)
+            place_type_layout.addWidget(hard_legend)
+            place_type_layout.addStretch(1)
+            
+            legend_layout.addWidget(place_type_widget)
+            
+            # Probability scale legend
+            prob_scale_widget = QWidget()
+            prob_scale_layout = QHBoxLayout(prob_scale_widget)
+            prob_scale_layout.setContentsMargins(0, 0, 0, 0)
+            
+            prob_legend_label = QLabel("Probability Scale:")
+            prob_legend_label.setStyleSheet("font-weight: bold;")
+            prob_scale_layout.addWidget(prob_legend_label)
+            
+            # Create color gradient for legend
+            prob_scale_layout.addWidget(QLabel("Low"))
+            
+            for i in range(5):
+                intensity = i / 4.0  # 0.0 to 1.0
+                hider_box = QLabel()
+                hider_box.setFixedSize(15, 15)
+                hider_box.setStyleSheet(f"background-color: rgba(33, 150, 243, {intensity}); border: 1px solid #1e88e5;")
+                prob_scale_layout.addWidget(hider_box)
+                
+                seeker_box = QLabel()
+                seeker_box.setFixedSize(15, 15)
+                seeker_box.setStyleSheet(f"background-color: rgba(244, 67, 54, {intensity}); border: 1px solid #F44336;")
+                prob_scale_layout.addWidget(seeker_box)
+            
+            prob_scale_layout.addWidget(QLabel("High"))
+            prob_scale_layout.addStretch(1)
+            
+            legend_layout.addWidget(prob_scale_widget)
+            
+            # Add legend to both tabs
+            hider_layout.addWidget(legend_widget, 0, 0, 1, self.world.cols + 2)
+            
+            # Create a duplicate legend for seeker tab
+            seeker_legend_widget = QWidget()
+            seeker_legend_layout = QVBoxLayout(seeker_legend_widget)
+            seeker_legend_layout.setContentsMargins(0, 5, 0, 10)
+            
+            # Place type legend for seeker tab
+            seeker_place_widget = QWidget()
+            seeker_place_layout = QHBoxLayout(seeker_place_widget)
+            seeker_place_layout.setContentsMargins(0, 0, 0, 0)
+            
+            seeker_place_label = QLabel("Place Types:")
+            seeker_place_label.setStyleSheet("font-weight: bold;")
+            seeker_place_layout.addWidget(seeker_place_label)
+            
+            seeker_easy_legend = QLabel("■ Easy (best for hider)")
+            seeker_easy_legend.setStyleSheet("color: #4CAF50; font-weight: bold;")
+            seeker_neutral_legend = QLabel("■ Neutral")
+            seeker_neutral_legend.setStyleSheet("color: #FFC107; font-weight: bold;")
+            seeker_hard_legend = QLabel("■ Hard (best for seeker)")
+            seeker_hard_legend.setStyleSheet("color: #F44336; font-weight: bold;")
+            
+            seeker_place_layout.addWidget(seeker_easy_legend)
+            seeker_place_layout.addWidget(seeker_neutral_legend)
+            seeker_place_layout.addWidget(seeker_hard_legend)
+            seeker_place_layout.addStretch(1)
+            
+            seeker_legend_layout.addWidget(seeker_place_widget)
+            
+            # Probability scale for seeker tab
+            seeker_prob_widget = QWidget()
+            seeker_prob_layout = QHBoxLayout(seeker_prob_widget)
+            seeker_prob_layout.setContentsMargins(0, 0, 0, 0)
+            
+            seeker_prob_label = QLabel("Probability Scale:")
+            seeker_prob_label.setStyleSheet("font-weight: bold;")
+            seeker_prob_layout.addWidget(seeker_prob_label)
+            
+            # Create color gradient for legend on seeker tab
+            seeker_prob_layout.addWidget(QLabel("Low"))
+            
+            for i in range(5):
+                intensity = i / 4.0  # 0.0 to 1.0
+                hider_box = QLabel()
+                hider_box.setFixedSize(15, 15)
+                hider_box.setStyleSheet(f"background-color: rgba(33, 150, 243, {intensity}); border: 1px solid #1e88e5;")
+                seeker_prob_layout.addWidget(hider_box)
+                
+                seeker_box = QLabel()
+                seeker_box.setFixedSize(15, 15)
+                seeker_box.setStyleSheet(f"background-color: rgba(244, 67, 54, {intensity}); border: 1px solid #F44336;")
+                seeker_prob_layout.addWidget(seeker_box)
+            
+            seeker_prob_layout.addWidget(QLabel("High"))
+            seeker_prob_layout.addStretch(1)
+            
+            seeker_legend_layout.addWidget(seeker_prob_widget)
+            
+            seeker_layout.addWidget(seeker_legend_widget, 0, 0, 1, self.world.cols + 2)
             
             # Populate hider tab
             index = 0
@@ -660,7 +817,7 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                 row_label = QLabel(f"Row {r}")
                 row_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 row_label.setStyleSheet("color: #1e88e5; font-weight: bold;")
-                hider_layout.addWidget(row_label, r + 1, 0)
+                hider_layout.addWidget(row_label, r + 2, 0)
                 
                 for c in range(self.world.cols):
                     # Column headers (only once)
@@ -668,29 +825,42 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                         col_label = QLabel(f"Col {c}")
                         col_label.setAlignment(Qt.AlignCenter)
                         col_label.setStyleSheet("color: #1e88e5; font-weight: bold;")
-                        hider_layout.addWidget(col_label, 0, c + 1)
+                        hider_layout.addWidget(col_label, 1, c + 1)
                     
                     # Place type indicator
                     place_type = self.world.get_place_type((r, c))
                     if place_type == PlaceType.EASY:
                         border_color = "#4CAF50"  # Green
+                        place_icon = "E"  # Easy
                     elif place_type == PlaceType.NEUTRAL:
                         border_color = "#FFC107"  # Yellow
+                        place_icon = "N"  # Neutral
                     else:  # HARD
                         border_color = "#F44336"  # Red
+                        place_icon = "H"  # Hard
                     
-                    # Probability box
-                    h_box = QLabel()
-                    h_box.setFixedSize(60, 60)
+                    # Create a better container for the probability info
+                    h_container = QLabel()
+                    h_container.setFixedSize(80, 80)
                     h_prob = hider_probs[index]
                     h_intensity = h_prob / hider_max if hider_max > 0 else 0
-                    h_box.setStyleSheet(f"background-color: rgba(33, 150, 243, {h_intensity}); border: 2px solid {border_color}; border-radius: 4px;")
-                    hider_layout.addWidget(h_box, r + 1, c + 1)
                     
-                    # Probability label (below the grid)
-                    h_label = QLabel(f"{h_prob:.4f}")
-                    h_label.setAlignment(Qt.AlignCenter)
-                    hider_layout.addWidget(h_label, r + 1 + self.world.rows, c + 1)
+                    # Use darker text for light backgrounds and light text for dark backgrounds
+                    text_color = "white" if h_intensity > 0.3 else "#121212"
+                    
+                    # Display probability more clearly
+                    h_container.setText(f"<div align='center'><b>{h_prob:.4f}</b><br>{place_icon}</div>")
+                    h_container.setAlignment(Qt.AlignCenter)
+                    h_container.setStyleSheet(f"""
+                        background-color: rgba(33, 150, 243, {h_intensity});
+                        border: 3px solid {border_color};
+                        border-radius: 8px;
+                        color: {text_color};
+                        font-weight: bold;
+                        font-size: 16px;
+                        padding: 4px;
+                    """)
+                    hider_layout.addWidget(h_container, r + 2, c + 1)
                     
                     index += 1
             
@@ -701,7 +871,7 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                 row_label = QLabel(f"Row {r}")
                 row_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 row_label.setStyleSheet("color: #1e88e5; font-weight: bold;")
-                seeker_layout.addWidget(row_label, r + 1, 0)
+                seeker_layout.addWidget(row_label, r + 2, 0)
                 
                 for c in range(self.world.cols):
                     # Column headers (only once)
@@ -709,29 +879,42 @@ class GameUI(QMainWindow, GameVisualization, GamePlay):
                         col_label = QLabel(f"Col {c}")
                         col_label.setAlignment(Qt.AlignCenter)
                         col_label.setStyleSheet("color: #1e88e5; font-weight: bold;")
-                        seeker_layout.addWidget(col_label, 0, c + 1)
+                        seeker_layout.addWidget(col_label, 1, c + 1)
                     
                     # Place type indicator
                     place_type = self.world.get_place_type((r, c))
                     if place_type == PlaceType.EASY:
                         border_color = "#4CAF50"  # Green
+                        place_icon = "E"  # Easy
                     elif place_type == PlaceType.NEUTRAL:
                         border_color = "#FFC107"  # Yellow
+                        place_icon = "N"  # Neutral
                     else:  # HARD
                         border_color = "#F44336"  # Red
+                        place_icon = "H"  # Hard
                     
-                    # Probability box
-                    s_box = QLabel()
-                    s_box.setFixedSize(60, 60)
+                    # Create a better container for the probability info
+                    s_container = QLabel()
+                    s_container.setFixedSize(80, 80)
                     s_prob = seeker_probs[index]
                     s_intensity = s_prob / seeker_max if seeker_max > 0 else 0
-                    s_box.setStyleSheet(f"background-color: rgba(244, 67, 54, {s_intensity}); border: 2px solid {border_color}; border-radius: 4px;")
-                    seeker_layout.addWidget(s_box, r + 1, c + 1)
                     
-                    # Probability label (below the grid)
-                    s_label = QLabel(f"{s_prob:.4f}")
-                    s_label.setAlignment(Qt.AlignCenter)
-                    seeker_layout.addWidget(s_label, r + 1 + self.world.rows, c + 1)
+                    # Use darker text for light backgrounds and light text for dark backgrounds
+                    text_color = "white" if s_intensity > 0.3 else "#121212"
+                    
+                    # Display probability more clearly
+                    s_container.setText(f"<div align='center'><b>{s_prob:.4f}</b><br>{place_icon}</div>")
+                    s_container.setAlignment(Qt.AlignCenter)
+                    s_container.setStyleSheet(f"""
+                        background-color: rgba(244, 67, 54, {s_intensity});
+                        border: 3px solid {border_color};
+                        border-radius: 8px;
+                        color: {text_color};
+                        font-weight: bold;
+                        font-size: 16px;
+                        padding: 4px;
+                    """)
+                    seeker_layout.addWidget(s_container, r + 2, c + 1)
                     
                     index += 1
             
