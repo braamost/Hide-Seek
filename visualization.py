@@ -99,33 +99,39 @@ class GameVisualization:
     def create_payoff_section(self, parent_layout):
         """
         Create the payoff matrix visualization section.
-        
+
         Args:
             parent_layout (QLayout): Parent layout
         """
         # Payoff matrix explanation
-        explanation = QLabel("This tab shows the payoff matrix for the game. " + 
-                          "Each cell represents the payoff when the hider chooses the row position and " + 
-                          "the seeker chooses the column position.")
+        explanation = QLabel("This tab shows the payoff matrix for the game. " +
+                            "Each cell represents the payoff when the hider chooses the row position and " +
+                            "the seeker chooses the column position.")
         explanation.setWordWrap(True)
-        
+
         # Payoff matrix visualization
         self.payoff_table = QTableWidget()
-        self.payoff_table.setMinimumHeight(400)  # Increased height
-        self.payoff_table.setMinimumWidth(600)   # Set minimum width
-        
-        # Directly add to parent layout
+
+        # Create a vertical layout for this section
+        section_layout = QVBoxLayout()
+        section_layout.addWidget(explanation)  # Top, left-aligned by default
+        section_layout.addWidget(self.payoff_table, alignment=Qt.AlignHCenter)  # Center table horizontally
+        section_layout.setSpacing(10)  # Add some spacing between elements
+        section_layout.setContentsMargins(10, 10, 10, 10)  # Add margins around the layout
+
+        # Create a container widget for the section
+        section_widget = QWidget()
+        section_widget.setLayout(section_layout)
+
+        # Add the section widget to the parent layout
         if isinstance(parent_layout, QWidget):
             if parent_layout.layout():
-                parent_layout.layout().addWidget(explanation)
-                parent_layout.layout().addWidget(self.payoff_table)
+                parent_layout.layout().addWidget(section_widget, alignment=Qt.AlignTop)
             else:
                 layout = QVBoxLayout(parent_layout)
-                layout.addWidget(explanation)
-                layout.addWidget(self.payoff_table)
+                layout.addWidget(section_widget, alignment=Qt.AlignTop)
         else:
-            parent_layout.addWidget(explanation)
-            parent_layout.addWidget(self.payoff_table)
+            parent_layout.addWidget(section_widget, alignment=Qt.AlignTop)
     
     def update_world_grid(self):
         """Update the world grid visualization."""
@@ -206,7 +212,7 @@ class GameVisualization:
         
         # Clear the table
         self.payoff_table.clear()
-        
+        size = 0
         # Set table dimensions based on the world type
         if isinstance(self.world, World1D):
             size = self.world.size
@@ -232,6 +238,7 @@ class GameVisualization:
             
             # In 2D world, the payoff matrix is (rows*cols) x (rows*cols)
             total_positions = rows * cols
+            size = total_positions
             self.payoff_table.setRowCount(total_positions)
             self.payoff_table.setColumnCount(total_positions)
             
@@ -255,6 +262,10 @@ class GameVisualization:
         # Auto-adjust columns to content
         self.payoff_table.resizeColumnsToContents()
         self.payoff_table.resizeRowsToContents()
+
+        # Set table size
+        self.payoff_table.setFixedSize(self.payoff_table.horizontalHeader().length() + size * 12,
+                                       self.payoff_table.verticalHeader().length() + size * 12)
         
         # Make sure table is visible
         self.payoff_table.show()
@@ -603,4 +614,4 @@ class GameVisualization:
                 for c in range(self.world.cols):
                     if r < len(self.world_buttons) and c < len(self.world_buttons[r]):
                         self.world_buttons[r][c].setStyleSheet(self.button_styles[(r, c)])
-                        self.world_buttons[r][c].setText("")  # Clear text 
+                        self.world_buttons[r][c].setText("")  # Clear text
