@@ -43,17 +43,21 @@ class GameLogic:
             if found:
                 self.seeker.add_win()
                 self.seeker.add_score(-score)
+                self.hider.add_score(score)
             else:
                 self.hider.add_win()
                 self.hider.add_score(score)
+                self.seeker.add_score(-score)
         else:
             # Score is from seeker's perspective 
             if found:
                 self.seeker.add_win()
                 self.seeker.add_score(score)
+                self.hider.add_score(-score)
             else:
                 self.hider.add_win()
                 self.hider.add_score(-score)
+                self.seeker.add_score(score)
 
         self.round_number += 1
         return hider_pos, seeker_pos, score, found
